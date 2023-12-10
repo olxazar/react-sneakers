@@ -1,11 +1,32 @@
-import React from "react";
+import React, { useState } from "react";
 import s from "./Card.module.scss";
 
-export const Card = ({ title, price, imageUrl }) => {
+export const Card = ({
+  id,
+  title,
+  price,
+  imageUrl,
+  addDrawer,
+  addFavorite,
+  favorited = false,
+}) => {
+  const [isAdded, setIsAdded] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(favorited);
+
+  const onClickPlus = () => {
+    addDrawer({ id, title, price, imageUrl });
+    setIsAdded(!isAdded);
+  };
+
+  const onClickFavorite = () => {
+    addFavorite({ id, title, price, imageUrl });
+    setIsFavorite(!isFavorite);
+  };
+
   return (
     <div className={s.card}>
-      <div className={s.favorite}>
-        <img src="/img/unliked.svg" alt="" />
+      <div onClick={onClickFavorite} className={s.favorite}>
+        <img src={isFavorite ? "/img/liked.svg" : "/img/unliked.svg"} alt="" />
       </div>
       <img width={133} height={112} src={imageUrl} alt="Sneakers" />
       <h5>{title}</h5>
@@ -14,9 +35,11 @@ export const Card = ({ title, price, imageUrl }) => {
           <span>Цена:</span>
           <b>{price}</b>
         </div>
-        <button className="button ">
-          <img width={11} height={11} src="/img/plus.svg" alt="Plus" />
-        </button>
+        <img
+          onClick={onClickPlus}
+          src={isAdded ? "/img/btn-checked.svg" : "/img/btn-plus.svg"}
+          alt="Plus"
+        />
       </div>
     </div>
   );

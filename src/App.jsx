@@ -1,51 +1,94 @@
-import { Card } from "./components/Card/Card";
 import { Header } from "./components/Header";
 import { Drawer } from "./components/Drawer";
-
-const arr = [
-  {
-    title: "Мужские Кроссовки Nike Blazer Mid Suede",
-    price: 12999,
-    imageUrl: "/img/sneakers/1.jpg",
-  },
-  {
-    title: "Мужские Кроссовки Nike Air Max 270",
-    price: 12999,
-    imageUrl: "/img/sneakers/2.jpg",
-  },
-  {
-    title: "Мужские Кроссовки Nike Blazer Mid Suede",
-    price: 8499,
-    imageUrl: "/img/sneakers/3.jpg",
-  },
-  {
-    title: "Кроссовки Puma X Aka Boku Future Rider",
-    price: 8999,
-    imageUrl: "/img/sneakers/4.jpg",
-  },
-];
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Home } from "./pages/Home";
+import { Favorites } from "./pages/Favorites";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 export const App = () => {
+  const [items, setItems] = useState([]);
+  const [cartItems, setCartItems] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const [searchValue, setSearchValue] = useState("");
+  const [drawerOpened, setDrawerOpened] = useState(false);
+
+  useEffect(() => {
+    axios.get("https://e75d32837d55faad.mokky.dev/items").then((res) => {
+      setItems(res.data);
+    });
+    axios.get("https://e75d32837d55faad.mokky.dev/cart").then((res) => {
+      setCartItems(res.data);
+    });
+    axios.get("https://e75d32837d55faad.mokky.dev/favorites").then((res) => {
+      setFavorites(res.data);
+    });
+  }, []);
+
+  const addCartToDrawer = (obj) => {
+    axios.post("https://e75d32837d55faad.mokky.dev/cart", obj);
+    setCartItems((prev) => [...prev, obj]);
+  };
+
+  const removeCartFromDrawer = (id) => {
+    axios.delete(`https://e75d32837d55faad.mokky.dev/cart/${id}`);
+    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const addCartToFavorite = async (obj) => {
+    try {
+      if (favorites.find((favObj) => favObj.id === obj.id)) {
+        axios.delete(`https://e75d32837d55faad.mokky.dev/favorites/${obj.id}`);
+      } else {
+        const { data } = await axios.post(
+          "https://e75d32837d55faad.mokky.dev/favorites",
+          obj
+        );
+        setCartItems((prev) => [...prev, data]);
+      }
+    } catch (error) {'Не удалось добавить в избранное'}
+  };
+
+  const onChangeSearchInput = (event) => {
+    setSearchValue(event.target.value);
+  };
+
   return (
     <div className="wrapper clear">
-      <Drawer />
-      <Header />
+      {drawerOpened && (
+        <Drawer
+          onRemove={removeCartFromDrawer}
+          items={cartItems}
+          onCloseDrawer={() => setDrawerOpened(false)}
+        />
+      )}
+      <Header onClickDrawer={() => setDrawerOpened(true)} />
 
-      <div className="content p-40">
-        <div className="d-flex align-center mb-40 justify-between">
-          <h1>Все кроссовки</h1>
-          <div className="search-block d-flex">
-            <img src="/img/search.svg" alt="Search" />
-            <input placeholder="Поиск ... " />
-          </div>
-        </div>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Home
+              items={items}
+              searchValue={searchValue}
+              setSearchValue={setSearchValue}
+              onChangeSearchInput={onChangeSearchInput}
+              addCartToDrawer={addCartToDrawer}
+              addCartToFavorite={addCartToFavorite}
+            ></Home>
+          }
+        ></Route>
 
-        <div className="d-flex ">
-          {arr.map((obj) => (
-            <Card title={obj.title} price={obj.price} imageUrl={obj.imageUrl} />
-          ))}
-        </div>
-      </div>
+        <Route
+          path="/favorites"
+          element={
+            <Favorites
+              items={favorites}
+              addCartToFavorite={addCartToFavorite}
+            />
+          }
+        ></Route>
+      </Routes>
     </div>
   );
 };
