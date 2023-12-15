@@ -1,14 +1,34 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Card } from "../components/Card/Card";
 
+
 export const Home = ({
+  cartItems,
   items,
   searchValue,
   setSearchValue,
   onChangeSearchInput,
   addCartToDrawer,
   addCartToFavorite,
+  isLoading,
 }) => {
+  
+
+  const renderItems = () => {
+    const filteredItems = items.filter((item) =>
+      item.title.toLowerCase().includes(searchValue.toLowerCase())
+    );
+    return (isLoading ? [...Array(10)] : filteredItems).map((item, index) => (
+      <Card
+        key={index}
+        addDrawer={(obj) => addCartToDrawer(obj)}
+        addFavorite={(obj) => addCartToFavorite(obj)}
+
+        loading={isLoading}
+        {...item}
+      />
+    ));
+  };
   return (
     <div className="content p-40">
       <div className="d-flex align-center mb-40 justify-between">
@@ -33,20 +53,7 @@ export const Home = ({
         </div>
       </div>
 
-      <div className="d-flex flex-wrap ">
-        {items
-          .filter((item) =>
-            item.title.toLowerCase().includes(searchValue.toLowerCase())
-          )
-          .map((item, index) => (
-            <Card
-              key={index}
-              addDrawer={(obj) => addCartToDrawer(obj)}
-              addFavorite={(obj) => addCartToFavorite(obj)}
-              {...item}
-            />
-          ))}
-      </div>
+      <div className="d-flex flex-wrap ">{renderItems()}</div>
     </div>
   );
 };

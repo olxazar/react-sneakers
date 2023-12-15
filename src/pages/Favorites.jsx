@@ -1,7 +1,10 @@
-import React from "react";
+import { React, useContext } from "react";
 import { Card } from "../components/Card/Card";
+import { AppContext } from "../App";
 
-export const Favorites = ({ items, addCartToFavorite }) => {
+export const Favorites = () => {
+  const { favorites, addCartToFavorite } = useContext(AppContext);
+
   return (
     <div className="content p-40">
       <div className="d-flex align-center mb-40 justify-between">
@@ -9,11 +12,11 @@ export const Favorites = ({ items, addCartToFavorite }) => {
       </div>
 
       <div className="d-flex flex-wrap ">
-        {items.map((item, index) => (
+        {favorites.map((item, index) => (
           <Card
             key={index}
-            addFavorite={addCartToFavorite}
             favorited={true}
+            addFavorite={addCartToFavorite}
             {...item}
           />
         ))}

@@ -1,6 +1,38 @@
-import React from "react";
+import React, { useState, useContext } from "react";
+import axios from "axios";
+import { AppContext } from "../App";
+import { Info } from "./Info";
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const Drawer = ({ onRemove, onCloseDrawer, items = [] }) => {
+  const [orderId, setOrderId] = useState(null);
+  const { cartItems, setCartItems } = useContext(AppContext);
+  const [isComplete, setIsComplete] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const onClickOrder = async () => {
+    try {
+      setIsLoading(true);
+      const { data } = await axios.post(
+        "https://e75d32837d55faad.mokky.dev/orders",
+        { items: cartItems }
+      );
+      setOrderId(data.id);
+      setIsComplete(true);
+      setCartItems([]);
+
+      for (let i = 0; i < cartItems.length; i++) {
+        const item = cartItems[i];
+        await axios.delete(
+          "https://e75d32837d55faad.mokky.dev/cart/" + item.id
+        );
+        await delay(1000);
+      }
+    } catch (error) {}
+    setIsLoading(false);
+  };
+
   return (
     <div className="overlay">
       <div className="drawer">
@@ -15,7 +47,7 @@ export const Drawer = ({ onRemove, onCloseDrawer, items = [] }) => {
         </h2>
 
         {items.length > 0 ? (
-          <div>
+          <div className="d-flex flex-column flex">
             <div className="items ">
               {items.map((obj) => (
                 <div className="cartItem d-flex align-center mb-20 ">
@@ -49,29 +81,27 @@ export const Drawer = ({ onRemove, onCloseDrawer, items = [] }) => {
                   <b>1074 руб.</b>
                 </li>
               </ul>
-              <button className="greenButton">
+              <button
+                disabled={isLoading}
+                onClick={onClickOrder}
+                className="greenButton"
+              >
                 Оформить заказ <img src="/img/arrow.svg" alt="Arrow" />
               </button>
             </div>
           </div>
         ) : (
-          <div class="cartEmpty d-flex align-center justify-center flex-column flex">
-            <img
-              class="mb-20"
-              width="120px"
-              height="120px"
-              src="/img/empty-cart.jpg"
-              alt="Empty"
-            />
-            <h2>Корзина пустая</h2>
-            <p class="opacity-6">
-              Добавьте хотя бы одну пару кроссовок, чтобы сделать заказ.
-            </p>
-            <button onClick={onCloseDrawer} class="greenButton">
-              <img src="/img/arrow.svg" alt="Arrow" />
-              Вернуться назад
-            </button>
-          </div>
+          <Info
+            title={isComplete ? "Заказ оформлен!" : "Корзина пустая"}
+            image={
+              isComplete ? "/img/complete-order.jpg" : "/img/empty-cart.jpg"
+            }
+            description={
+              isComplete
+                ? `Ваш заказ #${orderId} скоро будет передан курьерской доставке`
+                : "Добавьте хотя бы одну пару кроссовок, чтобы сделать заказ."
+            }
+          />
         )}
       </div>
     </div>
