@@ -1,9 +1,7 @@
 import React, { useContext } from "react";
 import { Card } from "../components/Card/Card";
 
-
 export const Home = ({
-  cartItems,
   items,
   searchValue,
   setSearchValue,
@@ -12,8 +10,6 @@ export const Home = ({
   addCartToFavorite,
   isLoading,
 }) => {
-  
-
   const renderItems = () => {
     const filteredItems = items.filter((item) =>
       item.title.toLowerCase().includes(searchValue.toLowerCase())
@@ -23,7 +19,6 @@ export const Home = ({
         key={index}
         addDrawer={(obj) => addCartToDrawer(obj)}
         addFavorite={(obj) => addCartToFavorite(obj)}
-
         loading={isLoading}
         {...item}
       />

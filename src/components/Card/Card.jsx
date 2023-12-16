@@ -1,6 +1,8 @@
 import React, { useState, useContext } from "react";
 import ContentLoader from "react-content-loader";
+
 import { AppContext } from "../../App";
+
 import s from "./Card.module.scss";
 
 export const Card = ({
@@ -11,19 +13,18 @@ export const Card = ({
   addDrawer,
   addFavorite,
   favorited = false,
-  added = false,
   loading = false,
 }) => {
   const { isItemAdded } = useContext(AppContext);
-
   const [isFavorite, setIsFavorite] = useState(favorited);
+  const obj = { id, parentId: id, title, price, imageUrl };
 
   const onClickPlus = () => {
-    addDrawer({ id, title, price, imageUrl });
+    addDrawer(obj);
   };
 
   const onClickFavorite = () => {
-    addFavorite({ id, title, price, imageUrl });
+    addFavorite(obj);
     setIsFavorite(!isFavorite);
   };
 
@@ -47,10 +48,12 @@ export const Card = ({
       ) : (
         <>
           <div onClick={onClickFavorite} className={s.favorite}>
-            <img
-              src={isFavorite ? "/img/liked.svg" : "/img/unliked.svg"}
-              alt=""
-            />
+            {addFavorite && (
+              <img
+                src={isFavorite ? "/img/liked.svg" : "/img/unliked.svg"}
+                alt=""
+              />
+            )}
           </div>
           <img width={133} height={112} src={imageUrl} alt="Sneakers" />
           <h5>{title}</h5>
@@ -59,13 +62,15 @@ export const Card = ({
               <span>Цена:</span>
               <b>{price}</b>
             </div>
-            <img
-              onClick={onClickPlus}
-              src={
-                isItemAdded(id) ? "/img/btn-checked.svg" : "/img/btn-plus.svg"
-              }
-              alt="Plus"
-            />
+            {addDrawer && (
+              <img
+                onClick={onClickPlus}
+                src={
+                  isItemAdded(id) ? "/img/btn-checked.svg" : "/img/btn-plus.svg"
+                }
+                alt="Plus"
+              />
+            )}
           </div>
         </>
       )}

@@ -1,15 +1,20 @@
 import React, { useState, useContext } from "react";
 import axios from "axios";
-import { AppContext } from "../App";
-import { Info } from "./Info";
+
+import { AppContext } from "../../App";
+import { Info } from "../Info";
+
+import s from "./Drawer.module.scss";
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export const Drawer = ({ onRemove, onCloseDrawer, items = [] }) => {
+export const Drawer = ({ onRemove, onCloseDrawer, opened, items = [] }) => {
   const [orderId, setOrderId] = useState(null);
   const { cartItems, setCartItems } = useContext(AppContext);
   const [isComplete, setIsComplete] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const totalPrice = cartItems.reduce((sum, obj) => obj.price + sum, 0);
+  const tax = (totalPrice * 0.05).toFixed(2);
 
   const onClickOrder = async () => {
     try {
@@ -34,8 +39,8 @@ export const Drawer = ({ onRemove, onCloseDrawer, items = [] }) => {
   };
 
   return (
-    <div className="overlay">
-      <div className="drawer">
+    <div className={`${s.overlay} ${opened ? s.overlayVisible : ""}`}>
+      <div className={s.drawer}>
         <h2 className="mb-30 d-flex justify-between">
           Корзина
           <img
@@ -48,7 +53,7 @@ export const Drawer = ({ onRemove, onCloseDrawer, items = [] }) => {
 
         {items.length > 0 ? (
           <div className="d-flex flex-column flex">
-            <div className="items ">
+            <div className="items flex   ">
               {items.map((obj) => (
                 <div className="cartItem d-flex align-center mb-20 ">
                   <div
@@ -73,12 +78,12 @@ export const Drawer = ({ onRemove, onCloseDrawer, items = [] }) => {
                 <li>
                   <span>Итого:</span>
                   <div></div>
-                  <b>21 498 руб.</b>
+                  <b>{totalPrice} руб.</b>
                 </li>
                 <li>
                   <span>Налог 5%: </span>
                   <div></div>
-                  <b>1074 руб.</b>
+                  <b>{tax} руб.</b>
                 </li>
               </ul>
               <button
